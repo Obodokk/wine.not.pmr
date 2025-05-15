@@ -1,0 +1,78 @@
+       <!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Оформление заказа | wine.not.pmr</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="icon" href="images/logo.jpg">
+</head>
+<body>
+  <header>
+    <div class="container header-content">
+      <div class="logo">
+        <img src="images/logo.jpg" alt="Логотип wine.not.pmr">
+        <h1>wine.not.pmr</h1>
+      </div>
+      <nav>
+        <a href="index.html">Главная</a>
+        <a href="catalog.html">Каталог</a>
+        <a href="designer.html">Конструктор</a>
+        <a href="order.html" class="active">Заказ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <h1>Оформление заказа</h1>
+
+      <div class="order-summary">
+        <h3>Ваш дизайн:</h3>
+        <div id="design-preview" style="width: 300px; height: 300px; margin: 20px auto; border: 1px solid #ddd;"></div>
+      </div>
+
+      <form id="order-form">
+        <div class="form-group">
+          <label for="name">Ваше имя:</label>
+          <input type="text" id="name" name="name" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Телефон:</label>
+          <input type="tel" id="phone" name="phone" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="social">Ссылка на Instagram или Telegram:</label>
+          <input type="text" id="social" name="social" class="form-control" placeholder="@username" required>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Адрес доставки (если требуется):</label>
+          <textarea id="address" name="address" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="comments">Дополнительные пожелания:</label>
+          <textarea id="comments" name="comments" class="form-control" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="btn">Подтвердить заказ</button>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>© 2025 wine.not.pmr - Персонализированные бокалы с гравировкой</p>
+      <div class="social-links">
+        <a href="https://instagram.com/wine.not.pmr">Instagram</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+  <script src="scripts/order.js"></script>
+</body>
+</html>

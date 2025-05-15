@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Конструктор гравировки | wine.not.pmr</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    @font-face {
+      font-family: 'ElegantScript';
+      src: url('fonts/ElegantScript.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'ModernCalligraphy';
+      src: url('fonts/ModernCalligraphy.ttf') format('truetype');
+    }
+
+    .designer-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .designer-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .designer-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 20px;
+      flex: 1;
+    }
+
+    @media (min-width: 992px) {
+      .designer-container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .preview-container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    #glass-preview-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #glass-preview {
+      max-width: 100%;
+      max-height: 500px;
+      object-fit: contain;
+    }
+
+    .controls-container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      height: 100%;
+    }
+
+    .controls-tabs {
+      display: flex;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      padding: 10px 15px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--text);
+      border-bottom: 3px solid transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .glass-options, .template-options, .cliparts-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 15px;
+      margin: 15px 0;
+    }
+
+    .option-card {
+      border: 2px solid #eee;
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .option-card:hover, .option-card.selected {
+      border-color: var(--primary);
+    }
+
+    .option-card.selected {
+      background-color: rgba(106, 90, 205, 0.05);
+    }
+
+    .option-card img {
+      width: 100%;
+      height: 80px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+
+    .text-controls {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 6px;
+    }
+
+    .text-align-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .tool-button {
+      padding: 8px 12px;
+      background-color: var(--light);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tool-button:hover, .tool-button.active {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .color-picker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .color-option {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .color-option.selected {
+      border-color: var(--dark);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="designer-wrapper">
+    <header>
+      <div class="container header-content">
+        <div class="logo">
+          <img src="images/logo.jpg" alt="Логотип wine.not.pmr">
+          <h1>wine.not.pmr</h1>
+        </div>
+        <nav>
+          <a href="index.html">Главная</a>
+          <a href="catalog.html">Каталог</a>
+          <a href="designer.html" class="active">Конструктор</a>
+          <a href="order.html">Заказ</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="designer-main">
+      <div class="container">
+        <div class="page-header">
+          <h1>Конструктор гравировки</h1>
+          <p>Создайте уникальный дизайн для вашего бокала</p>
+        </div>
+
+        <div class="designer-container">
+          <!-- Превью бокала -->
+          <div class="preview-container">
+            <h3>Предпросмотр дизайна</h3>
+            <!-- Зум бокала с макетом -->
+            <div class="zoom-slider-container">
+              <label for="zoom-slider">Масштаб: <span id="zoom-value">100%</span></label>
+              <input type="range" id="zoom-slider" min="50" max="200" value="100" step="5" class="zoom-slider">
+            </div>
+            <div id="glass-preview-container">
+
+              <canvas id="glass-preview"></canvas>
+            </div>
+
+            <div class="designer-tools">
+              <h3 style="margin-top: 20px;">Инструменты</h3>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                <button class="tool-button active" id="select-btn" title="Выделение">
+                  <i class="fas fa-mouse-pointer"></i> Выделение
+                </button>
+                <button class="tool-button" id="eraser-btn" title="Ластик">
+                  <i class="fas fa-eraser"></i> Ластик
+                </button>
+                <button class="tool-button" id="delete-btn" title="Удалить выделенное">
+                  <i class="fas fa-trash"></i> Удалить
+                </button>
+                <button class="tool-button" id="bring-to-front-btn" title="На передний план">
+                  <i class="fas fa-layer-group"></i> Вперед
+                </button>
+                <button class="tool-button" id="send-to-back-btn" title="На задний план">
+                  <i class="fas fa-layer-group"></i> Назад
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Панель управления -->
+          <div class="controls-container">
+            <div class="controls-tabs">
+              <button class="tab-btn active" data-tab="glass-tab">Бокал</button>
+              <button class="tab-btn" data-tab="text-tab">Текст</button>
+              <button class="tab-btn" data-tab="elements-tab">Создай дизайн</button>
+            </div>
+
+            <div id="glass-tab" class="tab-content active">
+              <h3>Выберите бокал</h3>
+              <div class="glass-options">
+                <div class="option-card selected" data-glass="wine">
+                  <img src="images/wine-glass.png" alt="Винный бокал">
+                  <p>Винный</p>
+                </div>
+                <div class="option-card" data-glass="beer">
+                  <img src="images/beer-glass.png" alt="Пивной бокал">
+                  <p>Пивной</p>
+                </div>
+                <div class="option-card" data-glass="whisky">
+                  <img src="images/whisky-glass.png" alt="Бокал для виски">
+                  <p>Виски</p>
+                </div>
+                <div class="option-card" data-glass="champagne">
+                  <img src="images/champagne-glass.png" alt="Бокал для шампанского">
+                  <p>Шампанское</p>
+                </div>
+                <div class="option-card" data-glass="cognac">
+                  <img src="images/cognac-glass.png" alt="Бокал для коньяка">
+                  <p>Коньяк</p>
+                </div>
+                <div class="option-card" data-glass="vodka">
+                  <img src="images/vodka-glass.png" alt="Рюмка для водки">
+                  <p>Водка</p>
+                </div>
+              </div>
+
+              <h3 style="margin-top: 30px;">Готовые шаблоны</h3>
+              <div class="template-options">
+                <div class="option-card" data-template="template1.png">
+                  <img src="images/templates/template1.png" alt="Шаблон 1">
+                  <p>Шаблон 1</p>
+                </div>
+                <div class="option-card" data-template="template2.png">
+                  <img src="images/templates/template2.png" alt="Шаблон 2">
+                  <p>Шаблон 2</p>
+                </div>
+                <div class="option-card" data-template="template3.png">
+                  <img src="images/templates/template3.png" alt="Шаблон 3">
+                  <p>Шаблон 3</p>
+                </div>
+                <div class="option-card" data-template="template4.png">
+                  <img src="images/templates/template4.png" alt="Шаблон 4">
+                  <p>Шаблон 4</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template5.png" alt="Шаблон 5">
+                  <p>Шаблон 5</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template6.png" alt="Шаблон 5">
+                  <p>Шаблон 6</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template7.png" alt="Шаблон 5">
+                  <p>Шаблон 7</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template8.png" alt="Шаблон 5">
+                  <p>Шаблон 8</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template9.png" alt="Шаблон 5">
+                  <p>Шаблон 9</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template10.png" alt="Шаблон 5">
+                  <p>Шаблон 10</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template11.png" alt="Шаблон 5">
+                  <p>Шаблон 11</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template12.png" alt="Шаблон 5">
+                  <p>Шаблон 12</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template13.png" alt="Шаблон 5">
+                  <p>Шаблон 13</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template14.png" alt="Шаблон 5">
+                  <p>Шаблон 14</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template15.png" alt="Шаблон 5">
+                  <p>Шаблон 15</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template16.png" alt="Шаблон 5">
+                  <p>Шаблон 16</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template17.png" alt="Шаблон 5">
+                  <p>Шаблон 17</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template18.png" alt="Шаблон 5">
+                  <p>Шаблон 18</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template19.png" alt="Шаблон 5">
+                  <p>Шаблон 19</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template20.png" alt="Шаблон 5">
+                  <p>Шаблон 20</p>
+                </div>
+                <div class="option-card" data-template="template1.png">
+                  <img src="images/templates/template21.png" alt="Шаблон 1">
+                  <p>Шаблон 21</p>
+                </div>
+                <div class="option-card" data-template="template2.png">
+                  <img src="images/templates/template22.png" alt="Шаблон 2">
+                  <p>Шаблон 22</p>
+                </div>
+                <div class="option-card" data-template="template3.png">
+                  <img src="images/templates/template23.png" alt="Шаблон 3">
+                  <p>Шаблон 23</p>
+                </div>
+                <div class="option-card" data-template="template4.png">
+                  <img src="images/templates/template24.png" alt="Шаблон 4">
+                  <p>Шаблон 24</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template25.png" alt="Шаблон 5">
+                  <p>Шаблон 25</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template26.png" alt="Шаблон 5">
+                  <p>Шаблон 26</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template27.png" alt="Шаблон 5">
+                  <p>Шаблон 27</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template28.png" alt="Шаблон 5">
+                  <p>Шаблон 28</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template29.png" alt="Шаблон 5">
+                  <p>Шаблон 29</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template30.png" alt="Шаблон 5">
+                  <p>Шаблон 30</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template31.png" alt="Шаблон 5">
+                  <p>Шаблон 31</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template32.png" alt="Шаблон 5">
+                  <p>Шаблон 32</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template33.png" alt="Шаблон 5">
+                  <p>Шаблон 33</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template34.png" alt="Шаблон 5">
+                  <p>Шаблон 34</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template35.png" alt="Шаблон 5">
+                  <p>Шаблон 35</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template36.png" alt="Шаблон 5">
+                  <p>Шаблон 36</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template37.png" alt="Шаблон 5">
+                  <p>Шаблон 37</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template38.png" alt="Шаблон 5">
+                  <p>Шаблон 38</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template39.png" alt="Шаблон 5">
+                  <p>Шаблон 39</p>
+                </div>
+                <div class="option-card" data-template="template5.png">
+                  <img src="images/templates/template40.png" alt="Шаблон 5">
+                  <p>Шаблон 40</p>
+                </div>
+
+                <div class="option-card selected" data-template="none">
+                  <div style="padding: 20px 0;">
+                    <i class="fas fa-plus-circle" style="font-size: 24px;"></i>
+                    <p>Свой дизайн</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="text-tab" class="tab-content">
+              <h3>Добавьте текст</h3>
+
+              <div class="text-controls">
+                <div class="form-group">
+                  <button id="add-text-btn" class="btn" style="margin-bottom: 15px;">
+                    <i class="fas fa-plus"></i> Добавить текст
+                  </button>
+
+                  <div id="text-list-container" style="margin-bottom: 15px;">
+                    <h4>Ваши тексты:</h4>
+                    <ul id="text-list" style="list-style: none; padding: 0;"></ul>
+                  </div>
+
+                  <textarea id="engraving-text" class="form-control" placeholder="Введите текст" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="font-select">Шрифт:</label>
+                  <select id="font-select" class="form-control">
+                    <option value="Arial">Arial - Обычный</option>
+                    <option value="Times New Roman">Times New Roman - Классический</option>
+                    <option value="Courier New">Courier New - Моноширинный</option>
+                    <option value="Brush Script MT">Brush Script - Рукописный</option>
+                    <option value="Impact">Impact - Жирный</option>
+                    <option value="ElegantScript">Elegant Script - Красивый</option>
+                    <option value="ModernCalligraphy">Modern Calligraphy - Каллиграфия</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="font-size">Размер текста: <span id="font-size-value">24</span>px</label>
+                  <input type="range" id="font-size" min="10" max="72" value="24" class="form-control">
+                </div>
+
+                <div class="form-group">
+                  <label>Цвет текста:</label>
+                  <div class="color-picker">
+                    <div class="color-option selected" style="background: #8f8f8f;" data-color="#8f8f8f"></div>
+                    <div class="color-option" style="background: #000000;" data-color="#000000"></div>
+                    <div class="color-option" style="background: #ff0000;" data-color="#ff0000"></div>
+                    <div class="color-option" style="background: #0000ff;" data-color="#0000ff"></div>
+                    <div class="color-option" style="background: #008000;" data-color="#008000"></div>
+                    <div class="color-option" style="background: #800080;" data-color="#800080"></div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Выравнивание:</label>
+                  <div class="text-align-buttons">
+                    <button class="tool-button" data-align="left"><i class="fas fa-align-left"></i></button>
+                    <button class="tool-button active" data-align="center"><i class="fas fa-align-center"></i></button>
+                    <button class="tool-button" data-align="right"><i class="fas fa-align-right"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="elements-tab" class="tab-content">
+              <h3>Добавьте элементы</h3>
+              <div class="cliparts-options">
+                <div class="option-card" data-clipart="heart.png">
+                  <img src="images/cliparts/crown1.png" alt="Сердце">
+                  <p>Корона 1</p>
+                </div>
+                <div class="option-card" data-clipart="star.png">
+                  <img src="images/cliparts/crown2.png" alt="Звезда">
+                  <p>Корона 2</p>
+                </div>
+                <div class="option-card" data-clipart="vine.png">
+                  <img src="images/cliparts/crown3.png" alt="Виноград">
+                  <p>Корона 3</p>
+                </div>
+                <div class="option-card" data-clipart="crown.png">
+                  <img src="images/cliparts/crown4.png" alt="Корона">
+                  <p>Корона4</p>
+                </div>
+                <div class="option-card" data-clipart="raindrops.png">
+                  <img src="images/cliparts/fairy.png" alt="Капли">
+                  <p>Фея</p>
+                </div>
+                <div class="option-card" data-clipart="raindrops.png">
+                  <img src="images/cliparts/witch.png" alt="Капли">
+                  <p>Ведьма</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/blazer.png" alt="Цветок">
+                  <p>Пиджак</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/heart.png" alt="Цветок">
+                  <p>Сердце</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/heart2.png" alt="Цветок">
+                  <p>Сердце 2</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/star1.png" alt="Цветок">
+                  <p>Звезда 1</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/star2.png" alt="Цветок">
+                  <p>Звезда 2</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/star3.png" alt="Цветок">
+                  <p>Звезда 3</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/infinity.png" alt="Цветок">
+                  <p>Бесконечность</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/mustache.png" alt="Цветок">
+                  <p>Усы</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/lips.png" alt="Цветок">
+                  <p>Губы</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/flamingo.png" alt="Цветок">
+                  <p>Фламинго</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/geometry.png" alt="Цветок">
+                  <p>Геометрия</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/beard.png" alt="Цветок">
+                  <p>Борода</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/face.png" alt="Цветок">
+                  <p>Лицо</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/smiley.png" alt="Цветок">
+                  <p>Смайл</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/hat.png" alt="Цветок">
+                  <p>Шляпа мага</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/fist.png" alt="Цветок">
+                  <p>Кулак</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/rings.png" alt="Цветок">
+                  <p>Кольца</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/hearts.png" alt="Цветок">
+                  <p>Сердца</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/owl.png" alt="Цветок">
+                  <p>Сова</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/horse.png" alt="Цветок">
+                  <p>Конь</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/tiger.png" alt="Цветок">
+                  <p>Тигр</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/bull.png" alt="Цветок">
+                  <p>Бык</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/lion.png" alt="Цветок">
+                  <p>Лев</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/lioness.png" alt="Цветок">
+                  <p>Львица</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/bear.png" alt="Цветок">
+                  <p>Медведь</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/cat.png" alt="Цветок">
+                  <p>Кот</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/cat2.png" alt="Цветок">
+                  <p>Кот 2</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/cat3.png" alt="Цветок">
+                  <p>Кот 3</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/cat4.png" alt="Цветок">
+                  <p>Кот 4</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/hand1.png" alt="Цветок">
+                  <p>Рука 1</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/hand2.png" alt="Цветок">
+                  <p>Рука 2</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/monograms.png" alt="Цветок">
+                  <p>Листья 1</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/leaves2.png" alt="Цветок">
+                  <p>Листья 2</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/rose.png" alt="Цветок">
+                  <p>Роза</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/spikelet.png" alt="Цветок">
+                  <p>Колосок</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/monograms1.png" alt="Цветок">
+                  <p>Вензелья 1</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/monograms2.png" alt="Цветок">
+                  <p>Вензелья 2</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/monograms3.png" alt="Цветок">
+                  <p>Вензелья 3</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/circle1.png" alt="Цветок">
+                  <p>Круг 1</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/circle2.png" alt="Цветок">
+                  <p>Круг 2</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/circle3.png" alt="Цветок">
+                  <p>Круг 3</p>
+                </div>
+                <div class="option-card" data-clipart="flower.png">
+                  <img src="images/cliparts/circle4.png" alt="Цветок">
+                  <p>Круг 4</p>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button id="save-design" class="btn">
+                <i class="fas fa-save"></i> Сохранить дизайн
+              </button>
+              <a href="order.html" class="btn">
+                <i class="fas fa-shopping-cart"></i> Оформить заказ
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>© 2025 wine.not.pmr - Персонализированные бокалы с гравировкой</p>
+        <div class="social-links">
+          <a href="https://instagram.com/wine.not.pmr">Instagram</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="scripts/designer.js"></script>
+</body>
+</html>
